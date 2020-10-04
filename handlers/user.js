@@ -1,6 +1,7 @@
 const { User } = require("../models")
 const cloud = require('cloudinary').v2;
 const fs = require('fs');
+const copyToObj = require('../utilities/').copyToObj;
 
 cloud.config({
     cloud_name: process.env.CLOUDINARY_CLOUD,
@@ -53,16 +54,17 @@ const userHandler = {
                 return next(err);
             }
             // const keys = Object.keys(body);
-            for (let key in body) {
-                if (typeof (body[key]) === 'object' && !Array.isArray(body[key])) {
-                    let childKeys = Object.keys(body[key]);
-                    for (let child of childKeys) {
-                        user[key][child] = body[key][child];
-                    }
-                } else {
-                    user[key] = body[key];
-                }
-            }
+            // for (let key in body) {
+            //     if (typeof (body[key]) === 'object' && !Array.isArray(body[key])) {
+            //         let childKeys = Object.keys(body[key]);
+            //         for (let child of childKeys) {
+            //             user[key][child] = body[key][child];
+            //         }
+            //     } else {
+            //         user[key] = body[key];
+            //     }
+            // }
+            copyToObj(body, user);
 
             let saved = await user.save();
             let tempSaved = saved.toJSON();

@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const userHandler = require('../handlers/user');
 const authMiddleware = require('../middleware/auth');
-const passport = require('passport');
 const multer = require('multer');
 
 // specify storage and filename options

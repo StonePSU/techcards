@@ -8,6 +8,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const classRoutes = require('./routes/class');
+const deckRoutes = require('./routes/deck');
 const passport = require('passport');
 require('./config/passport.js')();
 
@@ -49,6 +51,8 @@ app.use(bodyParser.json());
 // set up routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/class", classRoutes);
+app.use("/api/deck", deckRoutes);
 
 app.get("/", (req, res, next) => {
     res.send("<h1>hello there</h1>")

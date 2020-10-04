@@ -1,7 +1,7 @@
 {
-  "name": "authentication_single_page_apps",
+  "name": "techcards",
   "version": "1.0.0",
-  "description": "",
+  "description": "=======\r # template-server\r A base server template for a product.  Contains base api's for authentication, registration and user CRUD.",
   "main": "index.js",
   "scripts": {
     "test": "set NODE_ENV=test&& mocha --timeout 10000 --exit ./tests",
@@ -26,5 +26,16 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.3.0"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StonePSU/techcards.git"
+  },
+  "bugs": {
+    "url": "https://github.com/StonePSU/techcards/issues"
+  },
+  "homepage": "https://github.com/StonePSU/techcards#readme"
 }

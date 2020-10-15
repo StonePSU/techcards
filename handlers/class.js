@@ -1,5 +1,5 @@
 const Class = require('../models').Class;
-const { createResultsCollection, copyToObj } = require('../utilities');
+const { createResultsCollection, copyToObj, parseRequest } = require('../utilities');
 
 module.exports = {
     createClass: async function (req, res, next) {
@@ -15,10 +15,18 @@ module.exports = {
 
     },
     getClasses: async function (req, res, next) {
-        let filter = req.query;
+        // let filter = req.query;
+        // let expand = req.query.expand;
+        // if ('expand' in req.query) {
+        //     // remove the expand parameter so it doesn't get used in the filter
+        //     delete filter.expand;
+        // }
+
+        const { filter, expand } = parseRequest(req);
+
         try {
             // let classes = await Class.find(filter).populate('ownerId decks', 'firstName lastName deckName -_id');
-            let classes = await Class.find(filter).populate('ownerId decks', 'firstName lastName deckName');
+            let classes = await Class.find(filter).populate(expand);
             res.status(200).json(createResultsCollection(classes));
         } catch (err) {
             next(err);
@@ -26,10 +34,10 @@ module.exports = {
     },
     getClassById: async function (req, res, next) {
         let id = req.params.id;
-
+        const { expand } = parseRequest(req);
         try {
             // let classObj = await Class.findById(id).populate('ownerId decks', 'firstName lastName deckName -_id');
-            let classObj = await Class.findById(id).populate('ownerId decks', 'firstName lastName deckName');
+            let classObj = await Class.findById(id).populate(expand);
             if (!classObj) {
                 return res.status(404).json({ message: "Class not found for given id" })
             }

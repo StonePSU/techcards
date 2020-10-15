@@ -17,5 +17,17 @@ module.exports = {
             }
         }
         return to;
+    },
+    parseRequest(req) {
+        let filter = { ...req.query };
+        let expand = filter.expand
+
+        if ('expand' in filter) {
+            // remove the expand parameter so it doesn't get used in the filter
+            delete filter.expand;
+        }
+
+        return { filter, expand }
+
     }
 }

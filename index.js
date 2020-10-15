@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const classRoutes = require('./routes/class');
 const deckRoutes = require('./routes/deck');
+const cardRoutes = require('./routes/card');
 const passport = require('passport');
 require('./config/passport.js')();
 
@@ -39,7 +40,9 @@ mongoose.connect(process.env.MONGODB_URL, {
 });
 
 // setup logger
-app.use(morgan('combined', { stream: logStream }));
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('combined', { stream: logStream }));
+}
 
 //setup passport
 app.use(passport.initialize());
@@ -53,6 +56,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/class", classRoutes);
 app.use("/api/deck", deckRoutes);
+app.use("/api/card", cardRoutes);
 
 app.get("/", (req, res, next) => {
     res.send("<h1>hello there</h1>")

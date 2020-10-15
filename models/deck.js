@@ -9,53 +9,120 @@ const DeckSchema = new Schema({
     },
     classId: {
         type: Schema.Types.ObjectId,
-        ref: 'Class'
+        ref: 'Class',
+        set: function (classId) {
+            this._previousClassId = this.classId;
+            return classId;
+        }
     },
     ownerId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    cards: {
+    cards: [{
         type: Schema.Types.ObjectId,
         ref: 'Card'
-    }
+    }]
 }, {
     timestamps: true
 })
 
 DeckSchema.pre('remove', async function (next) {
-    let classId = this.classId;
-    let deckId = this._id;
+    const classId = this.classId;
+    const deckId = this._id;
+
 
     if (classId) {
         // need to remove this deck from the class
-        let classObj = await Class.findById(classId);
-        classObj.decks.filter(id => id !== deckId);
-        await classObj.save();
+        const classObj = await Class.findById(classId);
+        if (classObj) {
+            classObj.decks.remove(deckId);
+            await classObj.save();
+        }
         return next();
     } else {
-        let err = new Error("Class Not Found");
+        const err = new Error("Class Not Found");
         return next(err);
     }
 
 });
 
 DeckSchema.pre('save', async function (next) {
-    console.log("deck presave middleware")
     if (this.isNew) {
-        let classId = this.classId;
-        let classObj = await Class.findById(classId);
+        const classId = this.classId;
+        const classObj = await Class.findById(classId);
         if (!classObj) {
-            let err = new Error("Class Not Found");
+            const err = new Error("Class Not Found");
             return next(err);
         }
 
         classObj.decks.push(this._id);
         await classObj.save();
         return next();
+    } else {
+        // if the class id has been updated then we need to remove the deck id from the original class...
+        if (this._previousClassId && this._previousClassId !== this.classId) {
+            const classOld = await Class.findById(this._previousClassId);
+
+            if (!classOld) {
+                const err = new Error("Class Not Found");
+                return next(err);
+            }
+
+            classOld.decks.remove(this._id);
+            await classOld.save();
+
+            //... and add it to the new class
+            const classNew = await Class.findById(this.classId);
+            if (!classNew) {
+                const err = new Error("Class Not Found");
+                return next(err);
+            }
+
+            classNew.decks.push(this._id);
+            await classNew.save();
+
+            return next();
+
+        }
+
+        return next();
     }
 })
+
+// DeckSchema.post('save', async function (next) {
+//     console.log(`postsave: ${this.classId}`)
+//     try {
+//         // if the class id has been updated then we need to remove the deck id from the original class...
+//         if (this.oldClassId !== this.classId) {
+//             const classOld = await Class.findById(this.oldClassId);
+
+//             if (!classOld) {
+//                 const err = new Error("Class Not Found");
+//                 return next(err);
+//             }
+
+//             classOld.decks.remove(this.oldClassId);
+//             await classOld.save();
+
+//             //... and add it to the new class
+//             const classNew = await Class.findById(this.classId);
+//             if (!classNew) {
+//                 const err = new Error("Class Not Found");
+//                 return next(err);
+//             }
+
+//             classNew.decks.push(this._id);
+//             await classNew.save();
+
+//             return next();
+
+//         }
+//     } catch (err) {
+//         return next(err);
+//     }
+// })
 
 const Deck = mongoose.model('Deck', DeckSchema);
 

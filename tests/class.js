@@ -129,6 +129,57 @@ describe('Class APIs', () => {
 
                     done();
                 })
+        });
+
+        it("Can expand a document reference when getting all classes", done => {
+            chai
+                .request(server)
+                .get(`/api/class?expand=ownerId`)
+                .set("authorization", token)
+                .send()
+                .end((err, classes) => {
+                    classes.should.have.status(200);
+                    classes.body.should.have.property("data");
+                    classes.body.should.have.property("items");
+                    classes.body.data[0].should.have.property("ownerId")
+                    classes.body.data[0].ownerId.should.have.property("firstName")
+                    classes.body.data[0].ownerId.should.have.property("lastName")
+                    classes.body.data[0].ownerId.should.have.property("emailAddress")
+                    done();
+                })
+        });
+
+        it("Can get a single class by id", done => {
+            chai
+                .request(server)
+                .get(`/api/class/${classId}`)
+                .set("authorization", token)
+                .send()
+                .end((err, classes) => {
+                    classes.should.have.status(200);
+                    classes.body.should.have.property("ownerId");
+                    classes.body.should.have.property("className");
+                    classes.body.should.have.property("decks");
+                    done();
+                })
+        });
+
+        it("Can get a single class by id and expand owner id", done => {
+            chai
+                .request(server)
+                .get(`/api/class/${classId}?expand=ownerId`)
+                .set("authorization", token)
+                .send()
+                .end((err, classes) => {
+                    classes.should.have.status(200);
+                    classes.body.should.have.property("ownerId");
+                    classes.body.should.have.property("className");
+                    classes.body.should.have.property("decks");
+                    classes.body.ownerId.should.have.property("firstName");
+                    classes.body.ownerId.should.have.property("lastName");
+                    classes.body.ownerId.should.have.property("emailAddress");
+                    done();
+                })
         })
     })
 

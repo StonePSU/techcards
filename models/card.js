@@ -21,7 +21,7 @@ const CardSchema = new Schema({
         ref: 'Deck',
         required: true,
         set: function (value) {
-            this._previousDeckId = value;
+            this._previousDeckId = this.deckId;
             return value;
         }
     }
@@ -55,13 +55,14 @@ CardSchema.pre('remove', async (next) => {
 })
 
 CardSchema.pre('save', async function (next) {
-    console.log('pre save')
     try {
         // if this is a new card, add the card id to the correct deck
 
         if (this.isNew) {
             const deckId = this.deckId;
+
             const deck = await Deck.findById(deckId);
+
             if (!deck) {
                 let err = new Error("Deck not found");
                 return next(err);
@@ -88,7 +89,7 @@ CardSchema.pre('save', async function (next) {
                 await originalDeck.save();
 
                 // get the new deck...
-                const newDeck = Deck.findById(this.deckId);
+                const newDeck = await Deck.findById(this.deckId);
                 if (!newDeck) {
                     let err = new Error("New Deck not found");
                     return next(err);

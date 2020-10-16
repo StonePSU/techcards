@@ -38,7 +38,7 @@ describe('Deck APIs', () => {
             let newClass = await db.Class.create({ className: "Unit Test Class", ownerId: userId });
             classId = newClass._id;
 
-            // create test Deck
+            // create test Decks
             decks = await db.Deck.insertMany([{ deckName: "Unit Test Deck 1", ownerId: userId, classId }, { deckName: "Unit Test Deck 2", ownerId: userId, classId }, { deckName: "Unit Test Deck 3", ownerId: userId, classId }])
 
         } catch (err) {

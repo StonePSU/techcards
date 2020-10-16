@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = require('mongoose').Schema;
 const Class = require('./class');
+// const Card = require('./card');
 
 const DeckSchema = new Schema({
     deckName: {
@@ -32,17 +33,26 @@ DeckSchema.pre('remove', async function (next) {
     const classId = this.classId;
     const deckId = this._id;
 
-
-    if (classId) {
-        // need to remove this deck from the class
-        const classObj = await Class.findById(classId);
-        if (classObj) {
-            classObj.decks.remove(deckId);
-            await classObj.save();
+    try {
+        if (classId) {
+            // need to remove this deck from the class
+            const classObj = await Class.findById(classId);
+            if (classObj) {
+                classObj.decks.remove(deckId);
+                await classObj.save();
+            }
+        } else {
+            const err = new Error("Class Not Found");
+            return next(err);
         }
+
+        // need to delete all cards within this deck
+        // if (this.cards.length > 0) {
+        //     await Card.deleteMany({ _id: { $in: this.cards } })
+        // }
+
         return next();
-    } else {
-        const err = new Error("Class Not Found");
+    } catch (err) {
         return next(err);
     }
 

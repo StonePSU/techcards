@@ -7,7 +7,7 @@ module.exports = {
             const doc = { ...req.body };
             doc.ownerId = req.user._id;
             const card = await Card.create(doc);
-            res.status(201).json(card);
+            return res.status(201).json(card);
         } catch (err) {
             next(err);
         }

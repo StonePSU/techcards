@@ -31,11 +31,10 @@ const CardSchema = new Schema({
     }
 );
 
-CardSchema.pre('remove', async (next) => {
+CardSchema.pre('remove', async function (next) {
     try {
         // remove the card from the associated deck
         const deckId = this.deckId;
-
         if (!deckId) return next();
 
         const deck = await Deck.findById(deckId);

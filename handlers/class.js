@@ -1,4 +1,4 @@
-const Class = require('../models').Class;
+const { Class, Deck } = require('../models');
 const { createResultsCollection, copyToObj, parseRequest } = require('../utilities');
 
 module.exports = {
@@ -91,6 +91,64 @@ module.exports = {
 
         } catch (err) {
             next(err);
+        }
+    },
+    createDeckInClass: async function (req, res, next) {
+        const classId = req.params.id;
+        try {
+            const doc = { ...req.body };
+            doc.ownerId = req.user._id;
+            const deck = await Deck.create(doc);
+            const classObj = await Class.findById(classId);
+            if (!classObj) {
+                return next(new Error("Class Id invalid"));
+            }
+
+            classObj.decks.push(deck._id);
+            const updatedClass = await classObj.save()
+            return res.status(201).json(updatedClass);
+
+        } catch (err) {
+            return next(err);
+        }
+    },
+    removeDeckFromClass: async function (req, res, next) {
+        const classId = req.params.id;
+        const deckId = req.params.deckId;
+
+        try {
+            const classObj = await Class.findById(classId);
+            if (!classObj) {
+                return next(new Error("Class Id invalid"))
+            }
+
+            classObj.decks.remove(deckId);
+            const updatedClass = await classObj.save();
+            return res.status(200).json(updatedClass);
+        } catch (err) {
+            return next(err);
+        }
+    },
+    linkDeckToClass: async function (req, res, next) {
+        const classId = req.params.id;
+        const deckId = req.params.deckId;
+
+        try {
+            const deck = await Deck.findById(deckId);
+            const classObj = deck && await Class.findById(classId);
+            if (classObj) {
+                // only add the deck if it's not already there
+                const count = !classObj.decks.includes(deckId) && classObj.decks.push(deckId);
+
+                // save the class and return the updated object
+                const updatedClass = await classObj.save();
+                return res.status(200).json(updatedClass);
+            }
+
+            // something didn't work out
+            return res.status(400).json({ message: "An error occurred" })
+        } catch (err) {
+            return next(err);
         }
     }
 }

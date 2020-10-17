@@ -7,6 +7,7 @@ router.use(authMiddleware());
 
 // create
 router.post('/', classHandler.createClass);
+router.post('/:id/deck', classHandler.createDeckInClass);
 
 // get
 router.get('/', classHandler.getClasses)
@@ -15,8 +16,10 @@ router.get('/:id', classHandler.getClassById);
 
 // update
 router.put('/:id', classHandler.updateClass);
+router.put('/:id/deck/:deckId', classHandler.linkDeckToClass);
 
 // remove
 router.delete('/:id', classHandler.deleteClass)
+router.delete('/:id/deck/:deckId', classHandler.removeDeckFromClass);
 
 module.exports = router;

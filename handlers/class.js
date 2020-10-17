@@ -5,7 +5,7 @@ module.exports = {
     createClass: async function (req, res, next) {
         try {
             let doc = { ...req.body };
-            doc.ownerId = req.user._id;
+            doc.owner = req.user._id;
             let newClass = await Class.create(doc);
             res.status(201).json(newClass);
 
@@ -25,7 +25,7 @@ module.exports = {
         const { filter, expand } = parseRequest(req);
 
         try {
-            // let classes = await Class.find(filter).populate('ownerId decks', 'firstName lastName deckName -_id');
+            // let classes = await Class.find(filter).populate('owner decks', 'firstName lastName deckName -_id');
             let classes = await Class.find(filter).populate(expand);
             res.status(200).json(createResultsCollection(classes));
         } catch (err) {
@@ -36,7 +36,7 @@ module.exports = {
         let id = req.params.id;
         const { expand } = parseRequest(req);
         try {
-            // let classObj = await Class.findById(id).populate('ownerId decks', 'firstName lastName deckName -_id');
+            // let classObj = await Class.findById(id).populate('owner decks', 'firstName lastName deckName -_id');
             let classObj = await Class.findById(id).populate(expand);
             if (!classObj) {
                 return res.status(404).json({ message: "Class not found for given id" })
@@ -49,10 +49,10 @@ module.exports = {
 
     // function to return only classes created by logged in user
     getMyClasses: async function (req, res, next) {
-        let ownerId = req.user._id;
+        let owner = req.user._id;
         try {
             let classes = await Class.find({
-                ownerId
+                owner
             })
             res.status(200).json(createResultsCollection(classes));
 
@@ -97,7 +97,7 @@ module.exports = {
         const classId = req.params.id;
         try {
             const doc = { ...req.body };
-            doc.ownerId = req.user._id;
+            doc.owner = req.user._id;
             const deck = await Deck.create(doc);
             const classObj = await Class.findById(classId);
             if (!classObj) {
@@ -105,8 +105,8 @@ module.exports = {
             }
 
             classObj.decks.push(deck._id);
-            const updatedClass = await classObj.save()
-            return res.status(201).json(updatedClass);
+            await classObj.save()
+            return res.status(201).json(classObj);
 
         } catch (err) {
             return next(err);

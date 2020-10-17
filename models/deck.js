@@ -22,7 +22,7 @@ const DeckSchema = new Schema({
         type: String,
         required: true
     },
-    ownerId: {
+    owner: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true

@@ -5,7 +5,7 @@ module.exports = {
     createDeck: async function (req, res, next) {
         try {
             const doc = { ...req.body };
-            doc.ownerId = req.user._id;
+            doc.owner = req.user._id;
             const deck = await Deck.create(doc);
             res.status(201).json(deck);
         } catch (err) {
@@ -66,6 +66,57 @@ module.exports = {
             await deck.remove();
             return res.status(200).send();
 
+        } catch (err) {
+            return next(err);
+        }
+    },
+    createCardInDeck: async function (req, res, next) {
+        const { id } = req.params;
+
+        try {
+            const deck = await Deck.findById(id);
+            if (!deck) return next(new Error("Deck Id Invalid"));
+
+            deck.cards.push(req.body);
+            await deck.save();
+            return res.status(201).json(deck);
+
+        } catch (err) {
+            return next(err);
+        }
+    },
+    updateCardInDeck: async function (req, res, next) {
+        // todo complete this function
+        const { id, cardId } = req.params;
+
+        try {
+            const deck = await Deck.findById(id);
+
+            if (!deck) next(new Error("Invalid Deck Id"));
+
+            deck.cards.forEach(element => {
+                if (element._id.toString() === cardId) {
+                    copyToObj(req.body, element);
+                }
+            })
+
+            await deck.save();
+            return res.status(200).json(deck);
+        } catch (err) {
+            return next(err);
+        }
+    },
+
+    deleteCardInDeck: async function (req, res, next) {
+        // todo complete this function
+        const { id, cardId } = req.params;
+
+        try {
+            const deck = await Deck.findById(id);
+            deck.cards.remove(cardId);
+            await deck.save();
+
+            res.status(200).json(deck);
         } catch (err) {
             return next(err);
         }

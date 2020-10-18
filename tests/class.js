@@ -12,6 +12,7 @@ let classObj = {
     className: "NPM TEST CLASS"
 }
 let classId = null;
+var deckCreatedId = null;
 
 describe('Class APIs', () => {
 
@@ -44,8 +45,14 @@ describe('Class APIs', () => {
         // clean up the fake user so that the next time the test is run and it is re-created there are no issues
         db.User.deleteOne({ _id: userId }, function (err) {
             if (err) console.log(err);
-            done();
+
+            db.Deck.deleteOne({ _id: deckCreatedId }, function (err) {
+                if (err) console.log(err);
+                done();
+            })
         })
+
+
     })
 
 
@@ -72,7 +79,7 @@ describe('Class APIs', () => {
                     newClass.should.have.status(201);
                     newClass.body.should.have.property("_id");
                     newClass.body.should.have.property("className");
-                    newClass.body.should.have.property("ownerId");
+                    newClass.body.should.have.property("owner");
 
                     classId = newClass.body._id;
                     done();
@@ -107,7 +114,7 @@ describe('Class APIs', () => {
                     classes.body.items.should.equal(classes.body.data.length);
                     if (classes.body.items > 0) {
                         classes.body.data[0].should.have.property("className");
-                        classes.body.data[0].should.have.property("ownerId")
+                        classes.body.data[0].should.have.property("owner")
                     }
                     done();
                 });
@@ -134,17 +141,17 @@ describe('Class APIs', () => {
         it("Can expand a document reference when getting all classes", done => {
             chai
                 .request(server)
-                .get(`/api/class?expand=ownerId`)
+                .get(`/api/class?expand=owner`)
                 .set("authorization", token)
                 .send()
                 .end((err, classes) => {
                     classes.should.have.status(200);
                     classes.body.should.have.property("data");
                     classes.body.should.have.property("items");
-                    classes.body.data[0].should.have.property("ownerId")
-                    classes.body.data[0].ownerId.should.have.property("firstName")
-                    classes.body.data[0].ownerId.should.have.property("lastName")
-                    classes.body.data[0].ownerId.should.have.property("emailAddress")
+                    classes.body.data[0].should.have.property("owner")
+                    classes.body.data[0].owner.should.have.property("firstName")
+                    classes.body.data[0].owner.should.have.property("lastName")
+                    classes.body.data[0].owner.should.have.property("emailAddress")
                     done();
                 })
         });
@@ -157,7 +164,7 @@ describe('Class APIs', () => {
                 .send()
                 .end((err, classes) => {
                     classes.should.have.status(200);
-                    classes.body.should.have.property("ownerId");
+                    classes.body.should.have.property("owner");
                     classes.body.should.have.property("className");
                     classes.body.should.have.property("decks");
                     done();
@@ -167,17 +174,17 @@ describe('Class APIs', () => {
         it("Can get a single class by id and expand owner id", done => {
             chai
                 .request(server)
-                .get(`/api/class/${classId}?expand=ownerId`)
+                .get(`/api/class/${classId}?expand=owner`)
                 .set("authorization", token)
                 .send()
                 .end((err, classes) => {
                     classes.should.have.status(200);
-                    classes.body.should.have.property("ownerId");
+                    classes.body.should.have.property("owner");
                     classes.body.should.have.property("className");
                     classes.body.should.have.property("decks");
-                    classes.body.ownerId.should.have.property("firstName");
-                    classes.body.ownerId.should.have.property("lastName");
-                    classes.body.ownerId.should.have.property("emailAddress");
+                    classes.body.owner.should.have.property("firstName");
+                    classes.body.owner.should.have.property("lastName");
+                    classes.body.owner.should.have.property("emailAddress");
                     done();
                 })
         })
@@ -210,6 +217,37 @@ describe('Class APIs', () => {
                 })
         });
     });
+
+    describe("Dealing with Decks through classes", () => {
+        it("Can create a class through a deck", (done) => {
+            chai
+                .request(server)
+                .post(`/api/class/${classId}/deck`)
+                .set("authorization", token)
+                .send({ deckName: "TEST DECK" })
+                .end((err, res) => {
+                    res.should.have.status(201);
+                    res.body.should.have.property("decks");
+                    res.body.decks.should.have.length(1);
+                    deckCreatedId = res.body.decks[0];
+                    done();
+                })
+        })
+
+        it("Can remove a deck from a class", done => {
+            chai
+                .request(server)
+                .delete(`/api/class/${classId}/deck/${deckCreatedId}`)
+                .set("authorization", token)
+                .send()
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property("decks");
+                    res.body.decks.should.have.length(0);
+                    done();
+                })
+        })
+    })
 
     describe("Delete Class", () => {
         it("Cannot delete a class without a token", done => {
@@ -247,5 +285,7 @@ describe('Class APIs', () => {
                 })
         })
     })
+
+
 
 });

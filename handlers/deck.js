@@ -58,13 +58,15 @@ module.exports = {
         const id = req.params.id;
 
         try {
-            const deck = await Deck.findById(id);
-            if (!deck) {
-                return res.status(404).send();
-            }
+            await Deck.removeDeckAndUpdateClass(id);
+            res.status(200).send();
+            // const deck = await Deck.findById(id);
+            // if (!deck) {
+            //     return res.status(404).send();
+            // }
 
-            await deck.remove();
-            return res.status(200).send();
+            // await deck.remove();
+            // return res.status(200).send();
 
         } catch (err) {
             return next(err);
@@ -86,7 +88,7 @@ module.exports = {
         }
     },
     updateCardInDeck: async function (req, res, next) {
-        // todo complete this function
+
         const { id, cardId } = req.params;
 
         try {
@@ -108,7 +110,7 @@ module.exports = {
     },
 
     deleteCardInDeck: async function (req, res, next) {
-        // todo complete this function
+
         const { id, cardId } = req.params;
 
         try {

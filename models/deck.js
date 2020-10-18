@@ -33,7 +33,25 @@ const DeckSchema = new Schema({
 })
 
 DeckSchema.static('removeDeckAndUpdateClass', async function (deckId) {
-    console.log('removeDeckAndUpdateClass', deckId)
+
+    try {
+        // find all classes that have this deck
+        const classes = await Class.find(
+            { "decks": { _id: deckId } }
+        )
+
+        for (let classObj of classes) {
+            classObj.decks.remove(deckId);
+            await classObj.save();
+        }
+
+        await Deck.findOneAndRemove({ _id: deckId })
+        return;
+
+    } catch (err) {
+        console.log(err);
+        return err;
+    }
 })
 
 // DeckSchema.pre('remove', async function (next) {

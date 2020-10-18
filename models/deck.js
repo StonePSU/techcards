@@ -45,8 +45,10 @@ DeckSchema.static('removeDeckAndUpdateClass', async function (deckId) {
             await classObj.save();
         }
 
-        await Deck.findOneAndRemove({ _id: deckId })
-        return;
+        let result = await Deck.findOneAndRemove({ _id: deckId })
+        if (!result) return { status: 404, message: "Deck Not Found" };
+
+        return { status: 200, message: "" }
 
     } catch (err) {
         console.log(err);

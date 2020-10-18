@@ -58,15 +58,8 @@ module.exports = {
         const id = req.params.id;
 
         try {
-            await Deck.removeDeckAndUpdateClass(id);
-            res.status(200).send();
-            // const deck = await Deck.findById(id);
-            // if (!deck) {
-            //     return res.status(404).send();
-            // }
-
-            // await deck.remove();
-            // return res.status(200).send();
+            let { status, message } = await Deck.removeDeckAndUpdateClass(id);
+            res.status(status).send(message);
 
         } catch (err) {
             return next(err);

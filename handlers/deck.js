@@ -79,7 +79,12 @@ module.exports = {
             const deck = await Deck.findById(id);
             if (!deck) return next(new Error("Deck Id Invalid"));
 
-            deck.cards.push(req.body);
+            if (!req.body.cards) return next(new Error("Cards attribute not found"));
+
+            for (let card of req.body.cards) {
+                deck.cards.push(card);
+            }
+
             await deck.save();
             return res.status(201).json(deck);
 
